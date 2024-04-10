@@ -1,5 +1,8 @@
 const Joi = require("joi")
+require("dotenv").config()
 const mailSvc = require("../../services/mail.service")
+const {generateRandomString} = require('../../utilities/helpers');
+const bcrypt = require("bcryptjs")
 class AuthController {
 
     register =async(req,res,next)=>{
@@ -14,11 +17,33 @@ class AuthController {
         try{
             const payload = req.body;
 
+            payload.password = bcrypt.hashSync(payload.password, 10);
+
+            //byceypt.compareSync(string ,hash)
+            payload.status = 'inactive'
+            payload.activationToken = generateRandomString(100)
+
+            if(req.file){
+                payload.image = req.file.filename;
+            }
+
+            //TODO: DB Store
+            const registeredData ={
+                ...payload,
+                _id : 123
+            }
 
             await mailSvc.sendEmail(
                 "himalkarkee000@gmail.com",
-                "Test Email",
-                "<strong>Hello there</strong>"
+                "Activate your account",
+                `Dear ${registeredData.name} </br>
+                <p>You have register your account with username <strong>${registeredData.email}</strong>.</p>
+                <p>Please click the link below or copy and paste the url in browser to activate</p>
+                <a href="${process.env.FRONTEND_URL}/activate/${registeredData.activationToken}"> ${process.env.FRONTEND_URL}/activate/${registeredData.activationToken}</a></br>
+                <p>Regard,</p>
+                <p>${process.env.SMTP_FROM}</p>
+                <p><small><em>Please do not reply to this email via any mail service.</em></small></p>
+                `
             )
         res.json({
             result :payload,
@@ -36,6 +61,13 @@ class AuthController {
         //TODO : Ab query execute
         //TODO : OTP create
         // TODO : Client Response
+    }
+    activate = (req, res,  next)=>{
+        try{
+            const token = req.params.token
+        }catch(exception){
+            next(exception)
+        }
     }
 }
 

@@ -188,3 +188,8 @@ Password    ==>
 port        ==>
 
 # npm  i nodemailer dotenv
+
+# DATABASE 
+ Mangodb Server(community)
+ Mangodb Shell (server access via terminal)
+ 

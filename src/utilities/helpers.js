@@ -8,4 +8,4 @@ const generateRandomString = (length = 100)=>{
     }
     return random
 }
-module.exports = generateRandomString
+module.exports = {generateRandomString}

@@ -14,6 +14,7 @@ const {setPath,uploader}= require("../../middleware/uploader.middleware")
 
 
 authRoute.post('/register',setPath('user'),uploader.single("images"),bodyValidation(registerDTO),authCrtrl.register)
+authRoute.get("/activate/:token",authCrtrl.activate)
 authRoute.post("/login",authCrtrl.login)
 
 module.exports =authRoute
