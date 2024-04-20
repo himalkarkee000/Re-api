@@ -1,4 +1,4 @@
-const bodyValidation =(schema)=>{
+const bodyValidator =(schema)=>{
     return async(req ,res,next) =>{
         try{
             const data = req.body;
@@ -10,4 +10,4 @@ const bodyValidation =(schema)=>{
     }
 }
 
-module.exports = {bodyValidation}
+module.exports = {bodyValidator}

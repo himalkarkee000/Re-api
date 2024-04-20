@@ -1,4 +1,5 @@
-const express = require('express')
+const express = require('express');
+require("./db.config")
 const helmet = require("helmet")
 const cors =require("cors")
 const Joi = require("joi")
@@ -60,7 +61,7 @@ app.use((error, req, res, next)=>{
     const statusCode = error.code || 500; //server error
     const data = error.data|| null;
     const msg = error.message || "Internal server error";
-    console.log(statusCode,data,msg)
+    // console.log(statusCode,data,msg)
     res.status(statusCode).json({
         result:data,
         message:msg,

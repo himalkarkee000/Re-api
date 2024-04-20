@@ -2,7 +2,9 @@ const Joi = require("joi")
 require("dotenv").config()
 const mailSvc = require("../../services/mail.service")
 const {generateRandomString} = require('../../utilities/helpers');
-const bcrypt = require("bcryptjs")
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const authSvc = require("./auth.service");
 class AuthController {
 
     register =async(req,res,next)=>{
@@ -14,24 +16,14 @@ class AuthController {
 
         //url ===> /path ===> params
         //const params = req.params
+
+
         try{
-            const payload = req.body;
-
-            payload.password = bcrypt.hashSync(payload.password, 10);
-
-            //byceypt.compareSync(string ,hash)
-            payload.status = 'inactive'
-            payload.activationToken = generateRandomString(100)
-
-            if(req.file){
-                payload.image = req.file.filename;
-            }
+            const data = authSvc.transformRegisterData(req)
+            
 
             //TODO: DB Store
-            const registeredData ={
-                ...payload,
-                _id : 123
-            }
+            const registeredData = await authSvc.createUser(data);
 
             await mailSvc.sendEmail(
                 "himalkarkee000@gmail.com",
@@ -46,7 +38,7 @@ class AuthController {
                 `
             )
         res.json({
-            result :payload,
+            result :registeredData,
             message : "Register successfully",
             meta : null
 
@@ -56,18 +48,90 @@ class AuthController {
         next(exception)
     }
     }
-    login =(req,res,next)=>{
+    login =async(req,res,next)=>{
         // TODO: DATA Validate
         //TODO : Ab query execute
         //TODO : OTP create
         // TODO : Client Response
-    }
-    activate = (req, res,  next)=>{
+
         try{
-            const token = req.params.token
+            const {email , password} =req.body;
+
+            //validate email exits
+
+            const userDetails = await authSvc.findOneUser({
+                email : email
+            })
+        // if user doesnt exist
+
+        if(!userDetails){
+            throw {code: 400, message:"User does not exit"}
+        }
+        //user do exits
+        if(bcrypt.compareSync(password,userDetails.password)){
+            //passsword do match
+            if(userDetails.status !=='active'){
+                throw {code: 400, message:"Your account has not activate please contact to the administration"}
+            }
+            //user is active
+            const accessToken = jwt.sign({
+                sub: userDetails._id
+            },process.env.JWT_SECRET)
+
+            const refreshToken = jwt.sign({
+                sub: userDetails._id
+            },process.env.JWT_SECRET,{
+                expiresIn:"7d"
+            })
+
+            res.json({
+                result :{
+                    detail:{
+                        _id: userDetails._id,
+                        name: userDetails.name,
+                        email: userDetails.email,
+                        status: userDetails.status,
+                        role: userDetails.role,
+                        image: userDetails.image,
+                    }
+                },
+                token :{
+                    accessToken: accessToken,
+                    refreshToken :""
+                }
+            })
+        }else{
+            throw {code: 400, message:"Crendentials does not match"}
+        }
         }catch(exception){
             next(exception)
         }
+    }
+    activate = async(req, res,  next)=>{
+        try{
+            const token = req.params.token
+            const associatedUser = await authSvc.findOneUser({
+                activationToken :token
+            })
+            if(!associateUser) {
+                throw{code:400, message :"Token does not exits"}
+            }
+            const updateResult = await authSvc.updateUser({
+                activationToken :null,
+                status :"active"
+            },associatedUser._id);
+
+            res.json({
+                result :updateResult,
+                message :"Your account has been activate succesfully",
+                meta : null
+            })
+        } catch(exception){
+            next(exception)
+        }
+    }
+    getloggedIn = async(req, res, next)=>{
+
     }
 }
 

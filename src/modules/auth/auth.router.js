@@ -2,8 +2,8 @@
 // const authRoute = express.Router();
 const authRoute = require('express').Router();
 const authCrtrl = require("./auth.controller")
-const {bodyValidation} = require("../../middleware/validate.middleware")
-const {registerDTO} = require("./auth.dto")
+const {bodyValidator} = require("../../middleware/validate.middleware")
+const {registerDTO,loginDTO} = require("./auth.dto")
 const {setPath,uploader}= require("../../middleware/uploader.middleware")
 //express ====> Mount ====> Middleware
 
@@ -13,8 +13,9 @@ const {setPath,uploader}= require("../../middleware/uploader.middleware")
 
 
 
-authRoute.post('/register',setPath('user'),uploader.single("images"),bodyValidation(registerDTO),authCrtrl.register)
+authRoute.post('/register',setPath('user'),uploader.single("images"),bodyValidator(registerDTO),authCrtrl.register)
 authRoute.get("/activate/:token",authCrtrl.activate)
-authRoute.post("/login",authCrtrl.login)
+authRoute.post("/login",bodyValidator(loginDTO),authCrtrl.login)
+authRoute.get("/me",authCrtrl.getloggedIn)
 
 module.exports =authRoute

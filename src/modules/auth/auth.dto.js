@@ -14,4 +14,10 @@ const registerDTO = Joi.object({
 })
 // const response = await rule.validateAsync(payload)
 //name, email, password , role, image(skip)
-module.exports = {registerDTO}
+
+const loginDTO = Joi.object({
+    email:Joi.string().email().required(),
+    password:Joi.string().required()
+})
+
+module.exports = {registerDTO,loginDTO}
