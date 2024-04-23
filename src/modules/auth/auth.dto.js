@@ -6,7 +6,7 @@ const registerDTO = Joi.object({
     email: Joi.string().email().required(),
     password : Joi.string().pattern(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/).required(),
     confirmPassword : Joi.string().valid(Joi.ref('password')).required(),
-    role :Joi.string().pattern(/^(seller|customer)$/)
+    role :Joi.string().pattern(/^(seller|customer|admin)$/)
  
     //regular expression
     //[0-9a-zA-Z] the below can be also written

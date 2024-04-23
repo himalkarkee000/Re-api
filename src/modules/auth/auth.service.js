@@ -36,7 +36,7 @@ class AuthService{
             const userObj = await UserModel.findOne(filter);
             return userObj
         }catch(exception){
-            throw exceeption
+            throw exception
         }
     }
     updateUser =async(date, userId) =>{

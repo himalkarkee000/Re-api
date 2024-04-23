@@ -2,21 +2,29 @@ const mongoose = require("mongoose")
 
 
 const BannerSchema = new mongoose.Schema({
-    titlle : String,
-    link : URL,
+    titlle : {
+        type : String,
+        required : true,
+        min : 3
+    },
+    link : String,
     status :{
         type : String,
-        enum :['active','inactive']
+        enum :['active','inactive'],
+        default:"inactive"
     },
-    image: String,
+    image: {
+        type : String,
+        required : true
+    },
     createdBy :{
         type : mongoose.Types.ObjectId,
-        ref: "Banner",
+        ref: "User",
         default : null
     },
     updatedBy:{
         type : mongoose.Types.ObjectId,
-        ref: "Banner",
+        ref: "User",
         default : null
     }
 },{
@@ -24,5 +32,5 @@ const BannerSchema = new mongoose.Schema({
     autoCreate:true,          // created the table
     autoIndex : true 
 })
-const bannerModel = mongoose.model("Banner",BannerSchema)
-module.exports = BannnerModel
+const BannerModel = mongoose.model("Banner",BannerSchema)
+module.exports = BannerModel

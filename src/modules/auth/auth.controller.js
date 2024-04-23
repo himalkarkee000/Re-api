@@ -113,7 +113,7 @@ class AuthController {
             const associatedUser = await authSvc.findOneUser({
                 activationToken :token
             })
-            if(!associateUser) {
+            if(!associatedUser) {
                 throw{code:400, message :"Token does not exits"}
             }
             const updateResult = await authSvc.updateUser({
@@ -131,7 +131,38 @@ class AuthController {
         }
     }
     getloggedIn = async(req, res, next)=>{
+        try{
+            const loggedInUser = req.authUser;
+            const response ={
+                _id: loggedInUser._id,
+                name: loggedInUser.name,
+                email:loggedInUser.email ,
+                role: loggedInUser.role,
+                status: loggedInUser.status,
+                image:loggedInUser?. image
+                
+            }
+            res.json({
+                result : loggedInUser,
+                message : " Your Profile",
+                meta : null
+            })
 
+
+        }catch(exception){
+            next(exception)
+        }
+    }
+    adminAccess = async(req,res,next)=>{
+        try{
+            res.json({
+                result :"I am only access by admin",
+                message:" Only by admin",
+                meta: null
+            })
+        }catch(exception){
+            next(exception)
+        }
     }
 }
 
