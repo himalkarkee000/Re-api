@@ -11,9 +11,20 @@ const router =  require("express").Router()
 router.route('/')
     .post(auth,
     allowRole('admin'),
-    setPath('banner'),
+    setPath('banners'),
     uploader.single('image'),
     bodyValidator(BannerCreateDTO),
     bannerCtrl.create)
-
+    
+    .get(
+        auth,
+        allowRole("admin"),
+        bannerCtrl.index
+    );
+    router.route("/:id")
+    .get(
+        auth,
+        allowRole ("admin"),
+        bannerCtrl.show
+    )
 module.exports = router;

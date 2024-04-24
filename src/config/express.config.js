@@ -62,7 +62,7 @@ app.use((req,res, next)=>{
 //Error handling middleware
 app.use((error, req, res, next)=>{
     //next(args)
-    console.log(error instanceof mongoose.MongooseError)
+    // console.log(error instanceof mongoose.MongooseError)
     let statusCode = error.code || 500; //server error
     let data = error.data|| null;
     let msg = error.message || "Internal server error";

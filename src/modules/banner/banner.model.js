@@ -2,7 +2,7 @@ const mongoose = require("mongoose")
 
 
 const BannerSchema = new mongoose.Schema({
-    titlle : {
+    title : {
         type : String,
         required : true,
         min : 3
