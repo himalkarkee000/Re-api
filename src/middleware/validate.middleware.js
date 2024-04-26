@@ -1,7 +1,15 @@
-const bodyValidator =(schema)=>{
+const bodyValidator =(schema, fileUploadField = null)=>{
     return async(req ,res,next) =>{
         try{
             const data = req.body;
+            if(fileUploadField){
+                fileUploadField.map((uploadField)=>{
+                    if(!data[uploadField]){
+                        data[uploadField] = null
+                    }
+                })
+            }
+
             await schema.validateAsync(data,{aboutEarly :false})
             next()
         }catch(exception){

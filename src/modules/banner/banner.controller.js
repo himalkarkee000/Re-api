@@ -75,6 +75,37 @@ class BannerController {
             next(exception)
         }
     }
+
+    update = async(req,res,next) =>{
+        try{
+            const existingData = await bannerSvc.findOne({
+                _id : req.params.id
+            })
+            const payload = bannerSvc.transformUpdateData(req, existingData);
+            const updateStatus = await bannerSvc.update({_id: req.params.id}, payload);
+            res.json({
+                result : updateStatus,
+                message :"Data updated",
+                meta : null
+            })
+        } catch(exception){
+            next(exception)
+        }
+    }
+    delete =async(req,res,next)=>{
+        try{
+            const exists = await bannerSvc.findOne({_id: req.params.id})
+            const status = await bannerSvc.deleteOne({_id : req.params.id});
+            res.json({
+                result : status,
+                message : "Banner deleted successfully",
+                meta : null
+            })
+
+        } catch(exception){
+            next(exception)
+        }
+    }
 }
 const bannerCtrl = new BannerController()
 module.exports = bannerCtrl;

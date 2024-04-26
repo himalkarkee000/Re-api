@@ -93,12 +93,12 @@ class AuthController {
                         status: userDetails.status,
                         role: userDetails.role,
                         image: userDetails.image,
-                    }
-                },
+                    },
                 token :{
                     accessToken: accessToken,
                     refreshToken :refreshToken
                 }
+            }
             })
         }else{
             throw {code: 400, message:"Crendentials does not match"}

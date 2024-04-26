@@ -15,6 +15,18 @@ class BannerService{
         return data;
 
     }
+    transformUpdateData =(req,existingData) =>{
+        const data ={
+            ...req.body
+        }
+        if(req.file){
+            data.image = req.file.filename;
+        }else{
+            data.image = existingData.image
+        }
+        data.updatedBy = req.authUser._id;
+        return data;
+    }
     store = async(data) =>{
         try{
             const banner = new BannerModel(data);
@@ -52,6 +64,24 @@ class BannerService{
             }
             return data;
         }catch(exception){
+            throw exception
+        }
+    }
+    update = async(filter,data)=>{
+        try{
+            const updateResponse = await BannerModel.findOneAndUpdate(filter,{$set: data})
+            return updateResponse
+        } catch(exception){
+            throw exception;
+        }
+    }
+    deleteOne = async(filter) =>{
+        try{
+            const response = await BannerModel.findOneAndDelete(filter)
+            if(!response){
+                throw({code : 404, message :"banner does not exits"})
+            }
+        } catch(exception){
             throw exception
         }
     }
