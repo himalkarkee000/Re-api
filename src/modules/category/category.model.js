@@ -1,7 +1,7 @@
 const mongoose = require("mongoose")
 
 
-const BrandSchema = new mongoose.Schema({
+const CategorySchema = new mongoose.Schema({
     title : {
         type : String,
         required : true,
@@ -12,12 +12,17 @@ const BrandSchema = new mongoose.Schema({
         type: String,
         unique : true
     },
+    parentId :{
+      type : mongoose.Types.ObjectId,
+      ref: "Category",
+      default:null  
+    },
     status :{
         type : String,
         enum :['active','inactive'],
         default:"inactive"
     },
-    homeSection: Boolean,
+    
     image: {
         type : String,
         required : true
@@ -37,5 +42,5 @@ const BrandSchema = new mongoose.Schema({
     autoCreate:true,          // created the table
     autoIndex : true 
 })
-const BrandModel = mongoose.model("Brand",BrandSchema)
-module.exports = BrandModel
+const CategoryModel = mongoose.model("Category",CategorySchema)
+module.exports = CategoryModel

@@ -1,7 +1,8 @@
 const { model } = require("mongoose");
-const BannerModel = require("./banner.model");
+const slugify = require("slugify")
+const BrandModel = require("./brand.model");
 
-class BannerService{
+class BrandService{
     transformCreateData = (req)=>{
         const data ={
             ...req.body
@@ -11,6 +12,9 @@ class BannerService{
         }else{
             data.image = req.file.filename;
         }
+        data.slug = slugify(data.title,{
+            lower : true
+        })
         data.createdBy = req.authUser._id;
         return data;
 
@@ -29,8 +33,8 @@ class BannerService{
     }
     store = async(data) =>{
         try{
-            const banner = new BannerModel(data);
-            return await banner.save()
+            const brand = new BrandModel(data);
+            return await brand.save()
 
         }catch(exception){
             throw exception
@@ -38,7 +42,7 @@ class BannerService{
     }
     count = async({filter}) =>{
         try{
-            const countData = await BannerModel.countDocuments(filter);
+            const countData = await BrandModel.countDocuments(filter);
             return countData
         }catch(execption){
             throw execption
@@ -46,7 +50,7 @@ class BannerService{
     }
     listAll = async({limit, skip,filter={}}) =>{
         try{
-            const response = await BannerModel.find()
+            const response = await BrandModel.find(filter)
             .sort({_id : "desc"})
             .skip(skip)
             .limit(limit)
@@ -58,7 +62,7 @@ class BannerService{
     }
     findOne = async(filter) =>{
         try{
-            const data = await BannerModel.findOne(filter);
+            const data = await BrandModel.findOne(filter);
             if(!data){
                 throw{ code : 400, message:"data not found"}
             }
@@ -69,7 +73,7 @@ class BannerService{
     }
     update = async(filter,data)=>{
         try{
-            const updateResponse = await BannerModel.findOneAndUpdate(filter,{$set: data})
+            const updateResponse = await BrandModel.findOneAndUpdate(filter,{$set: data})
             return updateResponse
         } catch(exception){
             throw exception;
@@ -77,9 +81,9 @@ class BannerService{
     }
     deleteOne = async(filter) =>{
         try{
-            const response = await BannerModel.findOneAndDelete(filter)
+            const response = await BrandModel.findOneAndDelete(filter)
             if(!response){
-                throw({code : 404, message :"banner does not exits"})
+                throw({code : 404, message :"brand does not exits"})
             }
         } catch(exception){
             throw exception
@@ -87,7 +91,7 @@ class BannerService{
     }
     getForHome = async()=>{
         try{
-            const data = await BannerModel.find({
+            const data = await BrandModel.find({
                 status :"active"
             })
             .sort({_id :"desc"})
@@ -98,5 +102,5 @@ class BannerService{
         }
     }
 }
-const bannerSvc = new BannerService()
-module.exports = bannerSvc;
+const brandSvc = new BrandService()
+module.exports = brandSvc;

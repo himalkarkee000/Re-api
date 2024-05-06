@@ -1,15 +1,23 @@
 const { model } = require("mongoose");
-const BannerModel = require("./banner.model");
+const slugify = require("slugify")
+const CategoryModel = require("./category.model");
 
-class BannerService{
+class CategoryService{
     transformCreateData = (req)=>{
         const data ={
             ...req.body
         }
-        if(!req.file){
-            throw{code: 400, message :"image is required"}
-        }else{
+        if(req.file){
+            
             data.image = req.file.filename;
+        }
+        data.slug = slugify(data.title,{
+            lower : true
+        })
+
+        //"null",''
+        if(!data.parentId || data.parentId === 'null'|| data.parentId ===""){
+            data.parentId = null;
         }
         data.createdBy = req.authUser._id;
         return data;
@@ -24,13 +32,17 @@ class BannerService{
         }else{
             data.image = existingData.image
         }
+         //"null",''
+         if(!data.parentId || data.parentId === 'null'|| data.parentId ===""){
+            data.parentId = null;
+        }
         data.updatedBy = req.authUser._id;
         return data;
     }
     store = async(data) =>{
         try{
-            const banner = new BannerModel(data);
-            return await banner.save()
+            const category = new CategoryModel(data);
+            return await category.save()
 
         }catch(exception){
             throw exception
@@ -38,7 +50,7 @@ class BannerService{
     }
     count = async({filter}) =>{
         try{
-            const countData = await BannerModel.countDocuments(filter);
+            const countData = await CategoryModel.countDocuments(filter);
             return countData
         }catch(execption){
             throw execption
@@ -46,7 +58,10 @@ class BannerService{
     }
     listAll = async({limit, skip,filter={}}) =>{
         try{
-            const response = await BannerModel.find()
+            const response = await CategoryModel.find(filter)
+            .populate("parentId",["_id","title","slug"])
+            .populate("createdBy",["_id","name","email","roll"])
+            .populate("updatedBy",["_id","name","email","roll"])
             .sort({_id : "desc"})
             .skip(skip)
             .limit(limit)
@@ -58,7 +73,7 @@ class BannerService{
     }
     findOne = async(filter) =>{
         try{
-            const data = await BannerModel.findOne(filter);
+            const data = await CategoryModel.findOne(filter);
             if(!data){
                 throw{ code : 400, message:"data not found"}
             }
@@ -69,7 +84,7 @@ class BannerService{
     }
     update = async(filter,data)=>{
         try{
-            const updateResponse = await BannerModel.findOneAndUpdate(filter,{$set: data})
+            const updateResponse = await CategoryModel.findOneAndUpdate(filter,{$set: data})
             return updateResponse
         } catch(exception){
             throw exception;
@@ -77,9 +92,9 @@ class BannerService{
     }
     deleteOne = async(filter) =>{
         try{
-            const response = await BannerModel.findOneAndDelete(filter)
+            const response = await CategoryModel.findOneAndDelete(filter)
             if(!response){
-                throw({code : 404, message :"banner does not exits"})
+                throw({code : 404, message :"category does not exits"})
             }
         } catch(exception){
             throw exception
@@ -87,9 +102,12 @@ class BannerService{
     }
     getForHome = async()=>{
         try{
-            const data = await BannerModel.find({
+            const data = await CategoryModel.find({
                 status :"active"
             })
+            .populate("parentId",["_id","title","slug"])
+            .populate("createdBy",["_id","name","email","roll"])
+            .populate("updatedBy",["_id","name","email","roll"])
             .sort({_id :"desc"})
             .limit(10)
             return data;
@@ -98,5 +116,5 @@ class BannerService{
         }
     }
 }
-const bannerSvc = new BannerService()
-module.exports = bannerSvc;
+const categorySvc = new CategoryService()
+module.exports = categorySvc;
