@@ -100,6 +100,143 @@ class CartDetailController {
         next(exception)
     }
   }
+  placeOrder = async(req,res,next)=>{
+    try{
+      let{cartId, discount} =req.body;
+      if(cartId.length <=0){
+        throw {code:400, message:"cart items requires"}
+      }
+      //verify cart is of our own
+      const cartDetail = await cartDetailSvc.findAll({
+        buyerId: req.authUser._id,
+        _id: {$in: [...cartId]},
+        orderId : null,
+        status: "pending"
+      })
+
+      let order ={
+        buyerId : req.authUser._id,
+        cartDetail: cartId,
+        subTotal : 0,
+        discountPer:0,
+        discountAmt:0,
+        deliveryCharge : 100,
+        totalAmount : 0,
+        isPaid : false,
+        paymentMethod :"cod",
+        status : "pending",
+        createdBy : req.authUser._id
+
+      }
+      if(!cartDetail){
+        throw{code:400, message:"cart doesn't exist any more"}
+      }
+      let subTotal = 0;
+      cartDetail.map((cartItem) =>{
+        subTotal += +cartItem.amount
+      })
+      let disAmt = subTotal*discount/100
+      const total = subTotal - disAmt + order.deliveryCharge
+      order.subTotal = subTotal;
+      order.discountPer = discount;
+      order.discountAmt= total
+
+      //2 tasks ====> order create , orderId ==> cartDetail orderId.
+
+      const orderDetail =  await cartDetailSvc.placeOrder(order, cartId)
+
+      res.json({
+        result : orderDetail,
+        message : "Your order has been palced succesfully",
+        meta: null
+      })
+    } catch(exception){
+      next(exception)
+    }
+  }
+  listMyOrder  = async(req,res,next) =>{
+    try{
+      const loggedInUser = req.authUser;
+      let filter = {}
+      if(loggedInUser.role === 'admin'){
+        // fetch all
+      }else{
+        //only mine
+        filter = {
+          buyerId: loggedInUser._id
+        }
+
+      }
+      if(req.query.status && ['pending','confirmed','cancelled','delivered'].includes(req.query.status)){
+      filter = {
+        ...filter,
+        status : req.query.status
+      }
+
+      }
+      const orderData = await cartDetailSvc.getOrderList(filter)
+      res.json({
+        result:orderData,
+        message:"Your Item list",
+        meta: null
+      }) 
+
+    } catch(exception){
+      next(exception)
+    }
+  }
+  myOrder = async(req,res,next) =>{
+    try{
+      const loggedInUser =req.authUser;
+      let filter ={
+        sellerId : loggedInUser._id,
+        sellerId: {$in :null }
+      }
+      if(req.query.status && ['pending','orderd','cancelled','completed'].includes(req.query.status)){
+        filter = {
+          ...filter,
+          status : req.query.status
+        }
+      }
+      const productItem = await cartDetailSvc.getOrderList(filter)
+      res.json({
+        result:productItem,
+        message:"Your Items",
+        meta: null
+      })  
+      }catch (exception){
+      next(exception)
+    }
+  }
+  updateOrderStatus = async(req,res,next) =>{
+    try{
+      const loggedInUser = req.authUser;
+      let cartDetailStatus;
+      if(loggedInUser.role === 'seller'){
+        cartDetailStatus= await cartDetailSvc.updateCartDetail({
+          _id : req.params.id,
+          sellerId : loggedInUser.id
+        },{
+          status : "completed"
+        })
+      }else{
+        cartDetailStatus = await cartDetailSvc.updateCartDetail({
+          _id : req.params.id
+        },{
+          status : "completed"
+        })
+        
+      }
+      res.json({
+        result: cartDetailStatus,
+        message : "",
+        meta : null
+      })
+
+    } catch(exception){
+      next(exception)
+    }
+  }
 }
 
 const cartDetailCtrl = new CartDetailController();

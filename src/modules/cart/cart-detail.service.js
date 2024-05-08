@@ -1,4 +1,5 @@
 const CartDetailModel = require("./cart-detail.model");
+const orderModel = require("./order.model");
 
 class CartDetailService {
   transformCartObject = (product, quantity, user) => {
@@ -59,6 +60,51 @@ class CartDetailService {
       .populate('buyerId',['_id','name','email','role'])
       .populate("productId")
     return detail;
+    } catch(exception){
+      throw exception
+    }
+  }
+  placeOrder = async(data,cartId) =>{
+    try{
+
+      const order = new orderModel(data)
+      //order created 
+
+      await CartDetailModel.updateMany({
+        _id: {$in : [...cartId]}
+      },{
+        $set :{
+          orderId : order._id,
+          status:"ordered"
+        }
+      })
+      return order;
+    } catch(exception){
+      throw exception
+    }
+  }
+  getOrderList = async(filter) =>{
+    try{
+      const orderList = await orderModel.find(filter)
+      .populate("buyerId",["_id","name","email","phone","address"])
+      .populate("cartDetail")
+      .sort({"createdBy": "desc"})
+      return orderList
+
+    } catch(exception){
+      throw exception
+    }
+  }
+  updateCartDetail = async(filter,updateBody) =>{
+    try{
+      const status = await orderModel.updateOne(filter,{
+        $set : updateBody
+      })
+      await this.updateCartDetail({
+        orderId : filter._id,
+        status : "ordered"
+      })
+
     } catch(exception){
       throw exception
     }

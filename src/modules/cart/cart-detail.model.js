@@ -39,7 +39,7 @@ const CartDetailSchema = new mongoose.Schema({
     },
     status :{
         type : String,
-        enum :['pending','ordered','cancelled']
+        enum :['pending','ordered','cancelled','completed']
     },
     isPaid :{
         type :Boolean,
